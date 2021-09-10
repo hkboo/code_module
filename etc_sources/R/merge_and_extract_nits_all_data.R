@@ -10,7 +10,6 @@ get_merged_data <- function(data_path_list) {
   all_df <- NULL
   for (data_path in data_path_list) {
     df <- get_data(data_path)
-    df <- subset(df, '기준년도'==2020)
     if (is.null(all_df)) {
       all_df <- df
     } else {
@@ -21,7 +20,7 @@ get_merged_data <- function(data_path_list) {
 }
 
 
-data_path_list <- list.files(path = '.')
+data_path_list <- list.files(path = '.', pattern = '.xls')
 all_df <- get_merged_data(data_path_list)
 table(all_df$기준년도)
 
