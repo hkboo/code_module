@@ -1,0 +1,119 @@
+---
+title: "Google Drive API 테스트"
+author: "hkboo@kookmin.ac.kr"
+date: '2021 11 27 '
+output: html_notebook
+---
+> https://rpubs.com/hkboo/google_drive_api
+
+## 준비
+```{r googledrive}
+if (!require(googledrive)) install.packages("googledrive")
+drive_auth()
+```
+
+## 파일 검색하기
+```{r}
+drive_find(n_max = 10)
+```
+드라이브내 10개 폴더/파일명 가져오기
+- drive_find()로 하면 전체 탐색을 하므로 매우 느림!
+
+
+```{r}
+drive_find(type = "folder", n_max = 10)
+```
+드라이브내 10개 폴더명 가져오기 (type을 folder로 지정)
+
+
+```{r echo=FALSE}
+drive_find(type = "csv", n_max=10)
+```
+드라이브내 10개 csv 파일명 가져오기 (type을 folder로 지정)
+
+```{r echo=FALSE}
+drive_find(pattern = "figures")
+```
+특정 패턴이 들어간 파일을 찾아보자 (정규식)
+* 그런데 엄청 느리다! -> 오류가 발생할 수도! -> 오류 발생..
+
+```{r}
+drive_find(q = "name contains 'figures'")
+```
+쿼리로 검색하면 훨씬 빠르다!
+
+```{r}
+drive_find(q = "name contains 'figures'",
+           q = "modifiedTime > '2021-07-21T12:00:00'")
+```
+시간 조건(modifiedTime 등) 쿼리를 추가할 수 있다.
+
+```{r}
+drive_ls("minter")
+```
+특정 폴더가 있는지 확인하고 있으면 폴더 내 파일명을 전체로 가져온다.
+
+```{r}
+drive_ls(path = "minter", pattern = "config")
+```
+특정 폴더에 특정 패턴이 들어간 파일만 가져와보자.
+
+## 파일 업로드하기
+```{r}
+file_path <- "./webtoon_seeds.csv"
+drive_upload(file_path)
+```
+업로드한 후 드라이브 확인하면 생성날짜에 '오후 5:51에 Tidyverse API Packages 사용'과 같이 표기된다.
+
+## 파일 다운로드하기
+```{r}
+save_path <- "./downloaded.csv"
+downloaded_file <- drive_download("webtoon_seeds.csv", path = save_path, type = "csv")
+```
+방금 업로드한 파일을 downloaded.csv로 다운 받아본다.
+
+## 폴더 및 파일 생성
+```{r}
+top_dir_path <- "created_20211127"
+top_dir <- drive_mkdir(top_dir_path)
+sub_dir <- drive_mkdir("test1", path = top_dir)
+sub_dir2 <- drive_mkdir("test2", path = top_dir_path)
+```
+drive_mkdir() 파라매터 overwrite가 TRUE이면 기존 폴더는 휴지통으로 이동된다.
+
+
+```{r}
+create_file <- drive_create("test1.pdf", path = "created_20211127")
+```
+drive_create()를 하면 빈 파일이 생성되며 csv, pdf 등 파일 포맷 지정이 가능하다.
+
+```{r}
+drive_browse(create_file)
+```
+drive_browse()을 하면 생성된 파일을 확인할 수 있다.
+
+```{r}
+drive_ls(top_dir_path)
+```
+생성된 결과를 확인한다.
+
+## 폴더 삭제하기
+
+```{r}
+drive_rm(sub_dir)
+```
+drive_rm()을 통해 위 생성 폴더를 삭제해본다.
+
+```{r}
+drive_ls(top_dir_path)
+```
+삭제 결과를 확인한다.
+
+```{r}
+drive_rm(top_dir_path)
+```
+생성된 상위 폴더를 삭제한다.
+
+## 참고
+* https://googledrive.tidyverse.org/
+* https://rpubs.com/Evan_Jung/rgoogledrive
